@@ -6,6 +6,7 @@ from app_insta.models.image import Image, MongoImageDao
 import json
 from bson import ObjectId
 import datetime
+from operator import attrgetter,itemgetter
 
 mongo_product_dao = MongoProductDao()
 mongo_user_dao = MongoUserDao()
@@ -222,15 +223,16 @@ def add_test_images():
 @app.route('/popular', methods=['POST', 'GET'])
 def get_popular_images():
     pm_arr = []
-    pm_dict = dict()
 
     images = mongo_image_dao.get_all_images()
     for image in images:
         pm = calculate_popularity_metric(image)
+        pm_dict = dict()
         pm_dict['pm'] = pm
         pm_dict['image'] = image
         pm_arr.append(pm_dict)
-        popular_images = find_top_10(pm_arr)
+    popular_images = find_top_10(pm_arr)
+    print(popular_images)
     response = app.response_class(
         response=json.dumps(JSONEncoder().encode(popular_images)),
         status=200,
@@ -251,13 +253,13 @@ def calculate_popularity_metric(image):
     return popularity_metric
 
 def find_top_10(pm_arr):
-    print(pm_arr.sort(comparator, key=lambda k: k['name']))
+    sorted_arr = sorted(pm_arr, key=lambda image_pm : image_pm['pm'], reverse=True)
+    image_arr = []
+    for i in range(0,10):
+        image_arr.append(sorted_arr[i]['image'])
+    return image_arr
 
-def comparator(img1, img2):
-    key1 = img1.keys()[0]
-    key2 = img2.keys()[0]
 
-    return key1 - key2
 
 
 class JSONEncoder(json.JSONEncoder):
