@@ -232,7 +232,7 @@ def get_popular_images():
         pm_dict['image'] = image
         pm_arr.append(pm_dict)
     popular_images = find_top_10(pm_arr)
-    print(popular_images)
+    #print(popular_images)
     response = app.response_class(
         response=json.dumps(JSONEncoder().encode(popular_images)),
         status=200,
@@ -255,7 +255,12 @@ def calculate_popularity_metric(image):
 def find_top_10(pm_arr):
     sorted_arr = sorted(pm_arr, key=lambda image_pm : image_pm['pm'], reverse=True)
     image_arr = []
-    for i in range(0,10):
+    j = 0
+    if len(sorted_arr) >= 10:
+        j = 10
+    else:
+        j = len(sorted_arr)
+    for i in range(0, j):
         image_arr.append(sorted_arr[i]['image'])
     return image_arr
 
