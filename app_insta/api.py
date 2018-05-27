@@ -227,12 +227,14 @@ def get_popular_images():
     images = mongo_image_dao.get_all_images()
     for image in images:
         pm = calculate_popularity_metric(image)
+
         pm_dict = dict()
         pm_dict['pm'] = pm
         pm_dict['image'] = image
         pm_arr.append(pm_dict)
     popular_images = find_top_10(pm_arr)
-    #print(popular_images)
+    print(popular_images)
+
     response = app.response_class(
         response=json.dumps(JSONEncoder().encode(popular_images)),
         status=200,
@@ -254,16 +256,33 @@ def calculate_popularity_metric(image):
 
 def find_top_10(pm_arr):
     sorted_arr = sorted(pm_arr, key=lambda image_pm : image_pm['pm'], reverse=True)
-    image_arr = []
+    popular_images = []
     j = 0
     if len(sorted_arr) >= 10:
         j = 10
     else:
         j = len(sorted_arr)
     for i in range(0, j):
-        image_arr.append(sorted_arr[i]['image'])
-    return image_arr
+        #image = sorted_arr[i]['image']
+        #if image is not None and image
 
+        image_dict = sorted_arr[i]['image']
+        user_dict = get_user_data(image_dict['user_id'])
+
+        user_image_dict = dict()
+        user_image_dict['user'] = user_dict
+        user_image_dict['image'] = image_dict
+
+        popular_images.append(user_image_dict)
+
+    return popular_images
+
+def get_user_data(user_id):
+    user_dict = dict()
+    user = mongo_user_dao.get_by_id(user_id)
+    user_dict['username'] = user['username']
+    user_dict['profile_picture'] = user['user_url']
+    return user_dict
 
 
 
